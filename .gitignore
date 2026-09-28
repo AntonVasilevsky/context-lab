@@ -1,0 +1,32 @@
+# Raw and generated experiment output
+results/raw/
+.pi-cache/
+
+# Build and language-local artifacts
+target/
+.venv/
+__pycache__/
+*.py[cod]
+*.log
+
+# Local-only data and scratch space
+local-data/
+tmp/
+temp/
+temporary-downloads/
+*.tmp
+*.part
+
+# Local credentials and environment
+.env
+.env*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.json
+
+# OS/editor metadata
+.DS_Store
+.idea/
+.vscode/

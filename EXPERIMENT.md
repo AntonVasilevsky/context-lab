@@ -1,0 +1,197 @@
+# Purpose
+
+`context-lab` investigates two independent hypotheses:
+
+1. whether progressive disclosure can reduce unnecessary context loading for a large textual knowledge source while preserving reliable retrieval; and
+2. whether Graphify-assisted candidate routing adds useful navigation value for questions about relationships across a codebase.
+
+The experiments concern context selection, retrieval, and code navigation—not legal advice. Source files remain authoritative in every condition.
+
+# Hypothesis 1 — Progressive disclosure
+
+The progressive-disclosure experiment will compare three future conditions.
+
+## A. EAGER
+
+- Detailed legal lookup instructions and a corpus map are available from the start.
+- Actual corpus sections are still retrieved only when needed.
+
+## B. PROGRESSIVE
+
+- Only a compact skill description is initially visible.
+- Full legal lookup instructions and source sections are opened only when the agent decides they are necessary.
+
+## C. FORCED-RETRIEVAL CONTROL
+
+- For questions known by the evaluator to require the legal corpus, retrieval is explicitly required.
+- This is a diagnostic condition, not necessarily a proposed production design.
+
+Comparing the progressive and forced-retrieval conditions helps distinguish routing or skill-selection failure from retrieval failure after invocation. Follow-ups should use conversation context plus targeted retrieval rather than loading the complete corpus. Questions beyond the pinned corpus should receive an appropriate limitation instead of an invented answer.
+
+# Hypothesis 2 — Graphify
+
+Graphify will be evaluated in two separate experiments.
+
+## A. AUTONOMOUS ROUTING
+
+The agent decides whether ordinary deterministic search or Graphify is useful for the question.
+
+## B. FORCED A/B
+
+- Identical frozen questions are used in both conditions.
+- One condition requires deterministic search.
+- The other requires Graphify candidate routing.
+- Both conditions must inspect original source files before answering.
+
+Autonomous tool selection and Graphify retrieval quality are different questions and must not be conflated. Graphify output is a navigation aid, never an authoritative source.
+
+# Source corpora
+
+## Future legal corpus
+
+- One pinned official release of U.S. Code Title 17.
+- Its exact source URL, release/date, and checksum will be recorded later in a manifest.
+- Original XML will remain immutable.
+
+## Future code corpus
+
+- One pinned commit of the public `spring-projects/spring-petclinic` repository.
+- Its exact commit SHA will be recorded later.
+- The code snapshot will remain immutable for an experiment version.
+
+No corpus release or code commit is pinned in Phase 1.
+
+# Agent-visible vs evaluator-only boundary
+
+**Agent-visible material** consists only of:
+
+- questions given to the agent;
+- the source corpus and tools allowed by the active condition; and
+- skill descriptions and instructions exposed by that condition.
+
+**Evaluator-only material** includes:
+
+- expected source sections or files;
+- correctness rubrics;
+- expected routing decisions;
+- human review notes; and
+- aggregate comparison logic.
+
+Evaluator-only content must not be reachable by the agent process and must never be indexed by retrieval or Graphify tooling. Process isolation, path allowlists, and runner configuration must enforce this boundary before live evaluation; directory naming alone is not sufficient.
+
+# Evaluation dimensions
+
+Every future case will capture at least:
+
+## Identity and configuration
+
+- `question_id`
+- experiment/version
+- condition/mode
+- model
+- reasoning
+- session identifier
+
+## Routing
+
+- lookup/tool expected?
+- lookup/tool selected?
+- unnecessary lookup?
+- missed lookup?
+
+## Retrieval
+
+- candidate source count
+- source files/sections opened
+- expected source recall
+- irrelevant source count
+
+## Model cost
+
+- prompt tokens
+- completion tokens
+- total tokens
+
+## Timing
+
+- search/tool latency
+- model latency
+- total wall-clock latency
+
+## Answer quality
+
+- correctness
+- source-groundedness
+- unsupported claims
+- appropriate limitation/refusal when outside the corpus
+
+## Additional graph metrics
+
+- graph build time
+- graph build token/API cost, if any
+- graph query latency
+- graph candidate count
+
+Index-build cost and time must be recorded separately from per-query cost and time. Routing quality and retrieval quality must also be evaluated separately.
+
+# Evaluation question classes
+
+The planned initial small legal set will cover:
+
+- irrelevant/no-lookup questions
+- direct single-section questions
+- multi-section questions
+- conversational follow-ups
+- out-of-corpus / insufficient-evidence questions
+
+The planned code set will cover:
+
+- simple known/local lookup
+- cross-layer call/data flow
+- multiple implementations/adapters
+- persistence relationship
+- a question where lexical search should be sufficient
+- a question where graph relationships might reduce search space
+
+The actual evaluation questions are not part of Phase 1. They must be written and frozen before live model runs.
+
+# Interpretation discipline
+
+The first pilot will be descriptive rather than a statistically powered benchmark.
+
+For progressive disclosure, a result is **promising** only if:
+
+- context/token use decreases;
+- routing remains reliable; and
+- source retrieval and answer quality do not visibly degrade on the frozen pilot set.
+
+For Graphify, a result is **promising** only if it provides a measurable navigation benefit, such as:
+
+- fewer candidate or opened files;
+- lower downstream context/token usage;
+- better expected-source recall; or
+- improved answer quality on relationship-heavy questions.
+
+Interpretation must separately account for index construction cost, query latency, and complexity/maintenance cost. Graphify does not need to beat lexical search on simple or local questions. A valid result may be a conditional policy such as:
+
+- simple/local → deterministic search;
+- unfamiliar cross-module relationship → Graphify.
+
+# Freeze/version rules
+
+Before live evaluation:
+
+- corpus version is pinned;
+- code commit is pinned;
+- questions are frozen;
+- expected sources are frozen;
+- prompts and skill versions are frozen;
+- model and reasoning setting are frozen; and
+- runner commit is recorded.
+
+All comparison modes must use the same model, reasoning setting, frozen question set, and corpus version, with fresh sessions where required.
+
+After the first live output of an experiment version:
+
+- no tuning is allowed within that version; and
+- changes to prompts, tools, corpora, questions, expected answers/sources, or evaluation logic require a new explicitly identified experiment version.
