@@ -10,7 +10,7 @@
   },
   "question_set": {
     "path": "eval/agent-visible/legal/v1-draft/questions.jsonl",
-    "sha256": "970e4755670337f42014db1447a655a61b7d017042785676e91ed03adda8c21e",
+    "sha256": "22337618074909dd9fec0e55877d838ddb68070aee1d937f2b602c057821087a",
     "case_count": 20,
     "turn_count": 23
   },
@@ -26,7 +26,7 @@
   "gold_commitment": {
     "algorithm": "sha256",
     "canonicalization": "UTF-8 JSON Lines; one object per line; keys recursively sorted; separators ',' and ':'; ensure_ascii=false; LF after every line",
-    "sha256": "83a4801e77addc8563945c1356654fbc65f387d6437092a40b1adcbe4d2e8ec2"
+    "sha256": "8aaa6e9bec3bf47285b8c2447f1d5599a682b01b5deb18487088d03b5d1a695d"
   },
   "execution": {
     "live_runs_authorized": false,

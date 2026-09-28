@@ -26,8 +26,22 @@ EXPECTED_CLASS_COUNTS = {
     "FOLLOW_UP": 3,
     "OUT_OF_CORPUS_OR_INSUFFICIENT": 2,
 }
-LOOKUP_EXPECTATIONS = {"NOT_NEEDED", "REQUIRED", "REUSE_OR_TARGETED"}
+LOOKUP_EXPECTATIONS = {
+    "NOT_NEEDED",
+    "REQUIRED",
+    "CHECK_REQUIRED_TO_ESTABLISH_LIMITATION",
+    "REUSE_OR_TARGETED",
+}
 RESPONSE_MODES = {"DIRECT_ANSWER", "SOURCE_GROUNDED_ANSWER", "CORPUS_LIMITATION"}
+CORPUS_ANSWERABILITY = {"FULLY_ANSWERABLE", "PARTIALLY_ANSWERABLE", "NOT_ANSWERABLE"}
+CASE_003_PROMPT = "Hi! How are you?"
+CASE_014_PROMPT = (
+    "An artist owns the copyright in a qualifying work of visual art and sells the sole physical "
+    "canvas. The transaction expressly transfers only the physical object and does not transfer "
+    "copyright ownership. Under Title 17, distinguish ownership of the canvas from ownership of "
+    "copyright, and identify the relevant economic and attribution/integrity rights that remain "
+    "with the artist."
+)
 
 
 class ValidationError(ValueError):
@@ -140,6 +154,10 @@ def validate_public(root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
                 raise ValidationError(f"prompt must be nonempty: {expected_turn_id}")
     if total_turns != 23 or two_turn_cases != 3:
         raise ValidationError("public set must contain 23 turns and exactly three two-turn cases")
+    if questions[2]["turns"][0]["prompt"] != CASE_003_PROMPT:
+        raise ValidationError("case 003 must be the approved casual-conversation prompt")
+    if questions[13]["turns"][0]["prompt"] != CASE_014_PROMPT:
+        raise ValidationError("case 014 must contain the approved ownership and transfer stipulations")
 
     if conditions.get("schema_version") != 1 or conditions.get("benchmark_id") != "legal-v1-draft":
         raise ValidationError("unexpected conditions schema version or benchmark ID")
@@ -151,6 +169,30 @@ def validate_public(root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     condition_ids = [value.get("condition_id") for value in condition_values if isinstance(value, dict)]
     if condition_ids != EXPECTED_CONDITIONS:
         raise ValidationError(f"condition IDs must be {EXPECTED_CONDITIONS}")
+    forced = condition_values[2]
+    if forced.get("forced_lookup_expectations") != [
+        "REQUIRED",
+        "CHECK_REQUIRED_TO_ESTABLISH_LIMITATION",
+    ]:
+        raise ValidationError("forced control must force both required lookup classifications")
+    if forced.get("not_forced_lookup_expectations") != ["NOT_NEEDED"]:
+        raise ValidationError("forced control must not force NOT_NEEDED turns")
+    if not isinstance(forced.get("reuse_or_targeted_policy"), str):
+        raise ValidationError("forced control must preserve the REUSE_OR_TARGETED policy")
+
+    follow_up = conditions.get("follow_up_methodology", {})
+    if follow_up.get("design") != "END_TO_END_CONVERSATIONAL":
+        raise ValidationError("follow-up design must be end-to-end conversational")
+    if follow_up.get("prior_assistant_context_may_differ_across_conditions") is not True:
+        raise ValidationError("follow-up methodology must permit differing prior assistant context")
+    if follow_up.get("measurements") != ["PER_TURN", "CASE_CONVERSATION_LEVEL"]:
+        raise ValidationError("follow-up methodology must require turn and conversation measurements")
+    if follow_up.get("t2_is_identical_input_paired_ab") is not False:
+        raise ValidationError("follow-up t2 must not be treated as an identical-input paired A/B")
+    if "separate benchmark/version" not in follow_up.get("isolated_follow_up_policy", ""):
+        raise ValidationError("isolated follow-ups must require a separate benchmark/version")
+    if "actual agent response" not in follow_up.get("sequence", ""):
+        raise ValidationError("follow-up sequence must include each condition's actual t1 response")
     if metadata.get("conditions_path") != CONDITIONS_PATH.as_posix():
         raise ValidationError("conditions path does not match the public contract")
 
@@ -218,24 +260,30 @@ def validate_gold(
             raise ValidationError("exactly FOLLOW_UP cases must contain two turns")
 
         for turn_ordinal, (expected, public) in enumerate(zip(expected_turns, public_turns), start=1):
-            require_keys(
-                expected,
-                {
-                    "answer_criteria",
-                    "expected_sections",
-                    "lookup_expectation",
-                    "response_mode",
-                    "turn_id",
-                    "unsupported_claim_risks",
-                },
-                f"{label} turn {turn_ordinal}",
-            )
+            base_keys = {
+                "answer_criteria",
+                "expected_sections",
+                "lookup_expectation",
+                "response_mode",
+                "turn_id",
+                "unsupported_claim_risks",
+            }
+            actual_keys = set(expected)
+            if actual_keys not in (base_keys, base_keys | {"corpus_answerability"}):
+                raise ValidationError(
+                    f"{label} turn {turn_ordinal} keys differ: got {sorted(actual_keys)}"
+                )
             if expected["turn_id"] != public["turn_id"]:
                 raise ValidationError(f"gold/public turn ID mismatch for {question_id}")
             if expected["lookup_expectation"] not in LOOKUP_EXPECTATIONS:
                 raise ValidationError(f"invalid lookup expectation for {expected['turn_id']}")
             if expected["response_mode"] not in RESPONSE_MODES:
                 raise ValidationError(f"invalid response mode for {expected['turn_id']}")
+            if (
+                "corpus_answerability" in expected
+                and expected["corpus_answerability"] not in CORPUS_ANSWERABILITY
+            ):
+                raise ValidationError(f"invalid corpus answerability for {expected['turn_id']}")
             if not isinstance(expected["answer_criteria"], list) or not expected["answer_criteria"]:
                 raise ValidationError(f"answer criteria must be a nonempty list for {expected['turn_id']}")
             if not isinstance(expected["unsupported_claim_risks"], list):
@@ -247,9 +295,21 @@ def validate_gold(
             if unknown:
                 raise ValidationError(f"unknown expected sections for {expected['turn_id']}: {sorted(unknown)}")
 
-            if case_class in {"NO_LOOKUP", "OUT_OF_CORPUS_OR_INSUFFICIENT"}:
+            if case_class == "NO_LOOKUP":
                 if sections or expected["lookup_expectation"] != "NOT_NEEDED":
-                    raise ValidationError(f"{case_class} must not require corpus sections")
+                    raise ValidationError("NO_LOOKUP must not require corpus sections")
+            elif case_class == "OUT_OF_CORPUS_OR_INSUFFICIENT":
+                lookup = expected["lookup_expectation"]
+                if lookup == "NOT_NEEDED":
+                    if sections:
+                        raise ValidationError("NOT_NEEDED limitation cases must not name sections")
+                elif lookup == "CHECK_REQUIRED_TO_ESTABLISH_LIMITATION":
+                    if not sections or expected.get("corpus_answerability") != "PARTIALLY_ANSWERABLE":
+                        raise ValidationError(
+                            "checked limitation cases require supporting sections and partial answerability"
+                        )
+                else:
+                    raise ValidationError("invalid lookup expectation for limitation case")
             else:
                 if not sections:
                     raise ValidationError(f"{case_class} must identify expected sections")
@@ -267,6 +327,20 @@ def validate_gold(
         raise ValidationError(
             f"gold class counts differ: expected {EXPECTED_CLASS_COUNTS}, got {dict(class_counts)}"
         )
+
+    case003 = gold[2]
+    if case003["case_class"] != "NO_LOOKUP":
+        raise ValidationError("case 003 must remain NO_LOOKUP")
+    case014 = gold[13]["turn_expectations"][0]
+    if case014["expected_sections"] != ["17-usc-106", "17-usc-106a", "17-usc-202"]:
+        raise ValidationError("case 014 must remain bounded to §§ 106, 106A, and 202")
+    case019 = gold[18]["turn_expectations"][0]
+    if (
+        case019["lookup_expectation"] != "CHECK_REQUIRED_TO_ESTABLISH_LIMITATION"
+        or case019["expected_sections"] != ["17-usc-708"]
+        or case019.get("corpus_answerability") != "PARTIALLY_ANSWERABLE"
+    ):
+        raise ValidationError("case 019 must use the checked § 708 partial-answerability contract")
     return gold
 
 
@@ -297,6 +371,11 @@ def render_review(
                     "",
                     f"**Lookup:** `{expected['lookup_expectation']}`",
                     f"**Response mode:** `{expected['response_mode']}`",
+                    *(
+                        [f"**Corpus answerability:** `{expected['corpus_answerability']}`"]
+                        if "corpus_answerability" in expected
+                        else []
+                    ),
                     f"**Expected sections:** {', '.join(expected['expected_sections']) or '(none)' }",
                     "",
                     "**Answer criteria:**",

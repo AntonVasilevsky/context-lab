@@ -8,8 +8,12 @@ from pathlib import Path
 from unittest import mock
 
 from tools.validate_legal_benchmark import (
+    CASE_003_PROMPT,
+    CASE_014_PROMPT,
+    CONDITIONS_PATH,
     EXPECTED_CLASS_COUNTS,
     ValidationError,
+    read_json,
     read_jsonl,
     validate_public,
 )
@@ -25,6 +29,25 @@ class ValidateLegalBenchmarkTests(unittest.TestCase):
         self.assertEqual(metadata["target_class_counts"], EXPECTED_CLASS_COUNTS)
         self.assertEqual(len(questions), 20)
         self.assertEqual(sum(len(case["turns"]) for case in questions), 23)
+
+    def test_owner_review_question_wording_is_exact(self) -> None:
+        _, questions = validate_public(ROOT)
+        self.assertEqual(questions[2]["turns"][0]["prompt"], CASE_003_PROMPT)
+        self.assertEqual(questions[13]["turns"][0]["prompt"], CASE_014_PROMPT)
+
+    def test_forced_control_and_follow_up_methodology_are_explicit(self) -> None:
+        validate_public(ROOT)
+        conditions = read_json(ROOT / CONDITIONS_PATH)
+        forced = conditions["conditions"][2]
+        self.assertEqual(
+            forced["forced_lookup_expectations"],
+            ["REQUIRED", "CHECK_REQUIRED_TO_ESTABLISH_LIMITATION"],
+        )
+        self.assertEqual(forced["not_forced_lookup_expectations"], ["NOT_NEEDED"])
+        follow_up = conditions["follow_up_methodology"]
+        self.assertEqual(follow_up["design"], "END_TO_END_CONVERSATIONAL")
+        self.assertEqual(follow_up["measurements"], ["PER_TURN", "CASE_CONVERSATION_LEVEL"])
+        self.assertFalse(follow_up["t2_is_identical_input_paired_ab"])
 
     def test_agent_visible_rows_contain_no_evaluator_fields(self) -> None:
         _, questions = validate_public(ROOT)

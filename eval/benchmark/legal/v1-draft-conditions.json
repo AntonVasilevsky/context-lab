@@ -18,10 +18,29 @@
     {
       "condition_id": "FORCED_RETRIEVAL_CONTROL",
       "initial_disclosure": "Use the same compact initial disclosure as PROGRESSIVE.",
-      "retrieval_policy": "For evaluator-only turns marked REQUIRED, require invocation of the legal lookup workflow without disclosing expected sections or rubric content. Do not force retrieval for NOT_NEEDED turns. REUSE_OR_TARGETED follow-ups may rely on already opened source or perform targeted retrieval.",
+      "retrieval_policy": "For evaluator-only turns marked REQUIRED or CHECK_REQUIRED_TO_ESTABLISH_LIMITATION, require invocation of the legal lookup workflow without disclosing expected sections or rubric content. Do not force retrieval for NOT_NEEDED turns. REUSE_OR_TARGETED follow-ups may rely on already opened source or perform targeted retrieval.",
+      "forced_lookup_expectations": [
+        "REQUIRED",
+        "CHECK_REQUIRED_TO_ESTABLISH_LIMITATION"
+      ],
+      "not_forced_lookup_expectations": [
+        "NOT_NEEDED"
+      ],
+      "reuse_or_targeted_policy": "Already-opened source may be reused, or targeted retrieval may be performed.",
       "authority_policy": "The pinned XML is authoritative; control instructions, manifests, and search output are navigation aids only."
     }
   ],
+  "follow_up_methodology": {
+    "design": "END_TO_END_CONVERSATIONAL",
+    "sequence": "For each condition: t1 user prompt -> actual agent response in that condition -> t2 user prompt in the same session.",
+    "prior_assistant_context_may_differ_across_conditions": true,
+    "measurements": [
+      "PER_TURN",
+      "CASE_CONVERSATION_LEVEL"
+    ],
+    "t2_is_identical_input_paired_ab": false,
+    "isolated_follow_up_policy": "A future experiment requiring identical prior assistant context must use a separate benchmark/version with frozen assistant messages. legal-v1-draft contains no frozen assistant replies."
+  },
   "comparison_controls": {
     "same_question_order": true,
     "same_model": true,
