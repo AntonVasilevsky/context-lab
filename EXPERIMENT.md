@@ -61,6 +61,18 @@ Autonomous tool selection and Graphify retrieval quality are different questions
 
 No code commit is pinned yet.
 
+# Legal retrieval baselines
+
+Phase 3A provides structured exact-section lookup and deterministic lexical search over the derived Title 17 section files. The generated SQLite FTS5 index is ignored, reproducible derived state and a candidate-source mechanism only; the pinned source XML remains authoritative. This baseline is not semantic RAG and performs no semantic expansion or model calls.
+
+A later independent legal-retrieval experiment may compare:
+
+A. structured/lexical retrieval;
+B. semantic RAG; and
+C. hybrid lexical + semantic retrieval.
+
+Those conditions must use the same frozen corpus and question set. Conditions B and C are not implemented in Phase 3A.
+
 # Agent-visible vs evaluator-only boundary
 
 **Agent-visible material** consists only of:
@@ -153,7 +165,7 @@ The planned code set will cover:
 - a question where lexical search should be sufficient
 - a question where graph relationships might reduce search space
 
-The actual evaluation questions are not part of Phase 1. They must be written and frozen before live model runs.
+No actual evaluation questions are frozen yet. They must be written and frozen before live model runs.
 
 # Interpretation discipline
 

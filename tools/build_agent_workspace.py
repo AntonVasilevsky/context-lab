@@ -19,6 +19,7 @@ ALLOWED_EXACT = {
     PurePosixPath("corpus/manifest/title17.json"),
     PurePosixPath("corpus/manifest/title17-sections.json"),
     PurePosixPath("tools/prepare_title17.py"),
+    PurePosixPath("tools/search_sections.py"),
 }
 ALLOWED_PREFIXES = {
     PurePosixPath(".pi/skills/legal-lookup"),

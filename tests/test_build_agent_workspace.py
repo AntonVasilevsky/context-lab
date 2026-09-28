@@ -15,7 +15,9 @@ class AgentWorkspaceTests(unittest.TestCase):
         (self.root / "eval/agent-visible/legal").mkdir(parents=True)
         (self.root / "eval/evaluator-only/legal").mkdir(parents=True)
         (self.root / ".git").mkdir()
+        (self.root / "tools").mkdir()
         (self.root / "AGENTS.md").write_text("agent guidance\n", encoding="utf-8")
+        (self.root / "tools/search_sections.py").write_text("# deterministic search\n", encoding="utf-8")
         (self.root / "eval/agent-visible/legal/case.txt").write_text("visible\n", encoding="utf-8")
         (self.root / "eval/evaluator-only/legal/answers.txt").write_text("secret\n", encoding="utf-8")
         (self.root / ".git/config").write_text("git metadata\n", encoding="utf-8")
@@ -34,6 +36,10 @@ class AgentWorkspaceTests(unittest.TestCase):
         workspace, _ = self.build()
         self.assertEqual((workspace / "AGENTS.md").read_text(), "agent guidance\n")
         self.assertTrue((workspace / "eval/agent-visible/legal/case.txt").is_file())
+
+    def test_search_tool_may_be_staged(self) -> None:
+        workspace, _ = self.build(["tools/search_sections.py"])
+        self.assertTrue((workspace / "tools/search_sections.py").is_file())
 
     def test_evaluator_only_content_cannot_be_staged(self) -> None:
         with self.assertRaises(WorkspaceError):
