@@ -1,9 +1,10 @@
 # Tools
 
-Future phases may add:
+Phase 2 provides:
 
-- deterministic section search for the pinned legal corpus;
-- a constrained Graphify wrapper for candidate-source routing; and
-- an evaluation runner with cost, timing, routing, retrieval, and answer-quality instrumentation.
+- `prepare_title17.py`, a deterministic extractor and validator for the pinned official XML; and
+- `build_agent_workspace.py`, an explicit-allowlist workspace builder that physically excludes evaluator-only and other forbidden material.
 
-None of these tools is implemented in Phase 1. Any future tool must be restricted to the repository root, must exclude `eval/evaluator-only/` from agent access and indexing, and must treat original corpus or code files as authoritative.
+Future phases may add deterministic section search, a constrained Graphify wrapper for candidate-source routing, and an instrumented evaluation runner. None is implemented yet.
+
+Any future tool must be restricted to the repository root, exclude `eval/evaluator-only/` from agent access and indexing, and treat original corpus or code files as authoritative.

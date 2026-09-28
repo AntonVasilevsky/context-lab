@@ -9,4 +9,6 @@ The project has two tracks:
 
 The planned legal corpus is for retrieval research only. Nothing in this repository is legal advice.
 
-**Status: Phase 1 — experiment skeleton/protocol.** No external legal corpus or code sample is bundled yet, and no search, graph, or evaluation tooling is implemented. See [EXPERIMENT.md](EXPERIMENT.md) for the protocol.
+**Status: Phase 2 — legal corpus preparation and isolation.** The official Title 17 XML release current through Public Law 119-111 (September 18, 2026) is pinned with provenance and checksums. The unchanged XML is authoritative; deterministically derived per-section XML files are source fragments for future navigation. A staged-workspace builder physically excludes evaluator-only material from future agent workspaces.
+
+No legal search implementation or evaluation questions exist yet. PetClinic and Graphify are not installed, and no evaluation model calls have occurred. See [EXPERIMENT.md](EXPERIMENT.md) for the protocol.

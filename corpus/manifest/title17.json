@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "corpus_id": "usc-title-17-119-111",
+  "source_authority": "U.S. House of Representatives, Office of the Law Revision Counsel",
+  "official_landing_page": "https://uscode.house.gov/download/download.shtml",
+  "resolved_download_url": "https://uscode.house.gov/download/releasepoints/us/pl/119/111/xml_usc17@119-111.zip",
+  "release_identifier": "Public Law 119-111",
+  "release_point": "119-111",
+  "release_date": "2026-09-18",
+  "currency_statement": "Current through Public Law 119-111 (09/18/2026)",
+  "retrieved_at_utc": "2026-09-28T11:39:47Z",
+  "retrieval_transport": "Direct HTTPS download from the resolved official URL by a GitHub-hosted runner; the untouched artifact was transferred as a temporary Actions artifact and its SHA-256 was reverified locally.",
+  "artifact": {
+    "filename": "xml_usc17@119-111.zip",
+    "repository_path": "corpus/source/title17/xml_usc17@119-111.zip",
+    "format": "ZIP",
+    "byte_size": 493322,
+    "sha256": "9ccff175b257997dfdb634789de7ebf91e6abb7fea9b8106fe24e46554fde992"
+  },
+  "xml": {
+    "archive_member": "usc17.xml",
+    "filename": "usc17.xml",
+    "repository_path": "corpus/source/title17/usc17.xml",
+    "byte_size": 2719872,
+    "sha256": "414324629847597bad94c750c76dfcb6a2ef4ed06ecbdc5ab38f59cee8d797ee",
+    "detected_title_number": 17,
+    "document_identifier": "/us/usc/t17",
+    "publication_name": "Online@119-111"
+  },
+  "immutability": "The ZIP and extracted XML are pinned source artifacts and must not be edited in place. A different release requires a new explicit corpus version."
+}

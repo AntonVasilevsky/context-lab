@@ -1,0 +1,2 @@
+# Preserve the pinned official XML byte-for-byte; its CRLF line endings are authoritative.
+/corpus/source/title17/usc17.xml binary

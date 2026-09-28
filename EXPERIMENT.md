@@ -47,11 +47,11 @@ Autonomous tool selection and Graphify retrieval quality are different questions
 
 # Source corpora
 
-## Future legal corpus
+## Legal corpus
 
-- One pinned official release of U.S. Code Title 17.
-- Its exact source URL, release/date, and checksum will be recorded later in a manifest.
-- Original XML will remain immutable.
+- The official U.S. Code Title 17 XML release current through Public Law 119-111 (September 18, 2026) is pinned in `corpus/manifest/title17.json` with its exact URL and checksums.
+- The original ZIP and extracted XML remain immutable. The XML is authoritative.
+- Deterministically derived per-section XML files are navigation and source fragments, not replacements for the pinned XML. Their scope and checksums are recorded in `corpus/manifest/title17-sections.json`.
 
 ## Future code corpus
 
@@ -59,7 +59,7 @@ Autonomous tool selection and Graphify retrieval quality are different questions
 - Its exact commit SHA will be recorded later.
 - The code snapshot will remain immutable for an experiment version.
 
-No corpus release or code commit is pinned in Phase 1.
+No code commit is pinned yet.
 
 # Agent-visible vs evaluator-only boundary
 
@@ -77,7 +77,7 @@ No corpus release or code commit is pinned in Phase 1.
 - human review notes; and
 - aggregate comparison logic.
 
-Evaluator-only content must not be reachable by the agent process and must never be indexed by retrieval or Graphify tooling. Process isolation, path allowlists, and runner configuration must enforce this boundary before live evaluation; directory naming alone is not sufficient.
+Evaluator-only content must not be reachable by the agent process and must never be indexed by retrieval or Graphify tooling. `tools/build_agent_workspace.py` now stages real files from a legal-experiment allowlist into ignored local state and physically omits evaluator-only data, repository metadata, results, secrets, symlinks, and paths outside the repository. Future agents must run against a condition-specific staged workspace rather than the repository root. A future runner must preserve and enforce this boundary.
 
 # Evaluation dimensions
 
