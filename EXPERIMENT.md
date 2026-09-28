@@ -159,7 +159,7 @@ The planned code set will cover:
 - a question where lexical search should be sufficient
 - a question where graph relationships might reduce search space
 
-The legal-v1 questions and evaluation contract are frozen. The planned code set is not frozen.
+The legal-v1 questions and evaluation contract are frozen. Phase 4A provides a fake-only dry-run runner with staged workspaces; it neither executes a live agent nor scores the benchmark. Live execution remains blocked pending verified network/filesystem confinement and separate owner approval. Fake artifacts are engineering scratch under `.pi-cache/legal-runner-dry-runs/`, never results under `results/raw/`. See [runner design](docs/LEGAL_RUNNER.md). The planned code-navigation, Graphify, and Open Code Review tracks remain untouched; semantic RAG/hybrid are not implemented. The planned code set is not frozen.
 
 # Interpretation discipline
 

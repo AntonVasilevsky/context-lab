@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "benchmark_id": "legal-v1",
+  "frozen_inputs": {
+    "question_sha256": "22337618074909dd9fec0e55877d838ddb68070aee1d937f2b602c057821087a",
+    "condition_spec_sha256": "f1e783112f4f55963eee7b9a2a627de9d90a4b047054325a5eb95cf2e775b1c5",
+    "corpus_id": "usc-title-17-119-111",
+    "corpus_source_sha256": "414324629847597bad94c750c76dfcb6a2ef4ed06ecbdc5ab38f59cee8d797ee",
+    "gold_commitment_sha256": "8aaa6e9bec3bf47285b8c2447f1d5599a682b01b5deb18487088d03b5d1a695d"
+  },
+  "runner_git_commit": "UNCOMMITTED_PHASE_4A",
+  "execution_kind": "FAKE_DRY_RUN",
+  "model_execution_authorized": false,
+  "live_model_invoked": false,
+  "benchmark_scoring_performed": false,
+  "canonical_result_artifact": false,
+  "experimental_provider": "UNAPPROVED",
+  "experimental_model": "EXPERIMENT_MODEL_UNAPPROVED",
+  "reasoning_level": "UNAPPROVED",
+  "temperature": null,
+  "condition_order": ["EAGER", "PROGRESSIVE", "FORCED_RETRIEVAL_CONTROL"],
+  "case_selection": "ALL_FROZEN_ORDER",
+  "network_policy": "LIVE_BLOCKED_UNVERIFIED",
+  "workspace_policy": "STAGED_ALLOWLIST_PER_CASE",
+  "retry_policy": "NO_RETRIES",
+  "attempt_count": 1,
+  "execution_authorized": false
+}

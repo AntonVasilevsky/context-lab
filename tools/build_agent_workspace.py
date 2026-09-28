@@ -123,7 +123,9 @@ def enumerate_files(repo_root: Path, requested: str) -> list[tuple[PurePosixPath
     return files
 
 
-def build_workspace(repo_root: Path, workspace_name: str, includes: list[str]) -> tuple[Path, dict]:
+def build_workspace(
+    repo_root: Path, workspace_name: str, includes: list[str], *, destination: Path | None = None
+) -> tuple[Path, dict]:
     repo_root = repo_root.resolve(strict=True)
     if not WORKSPACE_NAME.fullmatch(workspace_name):
         raise WorkspaceError("workspace name must contain only lowercase letters, digits, and hyphens")
@@ -138,10 +140,28 @@ def build_workspace(repo_root: Path, workspace_name: str, includes: list[str]) -
         raise WorkspaceError("explicit includes selected no files")
 
     cache_root = repo_root / ".pi-cache"
-    workspace_parent = cache_root / "agent-workspaces"
-    destination = workspace_parent / workspace_name
+    if destination is None:
+        destination = cache_root / "agent-workspaces" / workspace_name
+    else:
+        if not destination.is_absolute() or destination.name != workspace_name:
+            raise WorkspaceError("explicit destination must be absolute and end with workspace name")
+        try:
+            relative = destination.relative_to(cache_root)
+        except ValueError as error:
+            raise WorkspaceError("workspace destination must be under .pi-cache") from error
+        if len(relative.parts) != 5 or relative.parts[0] != "legal-runner-dry-runs" or relative.parts[2] != "workspaces":
+            raise WorkspaceError("workspace destination must be a dry-run case workspace")
+        for component in relative.parts:
+            if not WORKSPACE_NAME.fullmatch(component):
+                raise WorkspaceError("unsafe workspace destination component")
+    workspace_parent = destination.parent
     temporary = workspace_parent / f".{workspace_name}.tmp"
-    for path in (cache_root, workspace_parent, destination, temporary):
+    current = repo_root
+    for component in workspace_parent.relative_to(repo_root).parts:
+        current = current / component
+        if current.is_symlink() or (current.exists() and not current.is_dir()):
+            raise WorkspaceError(f"workspace output parent is unsafe: {current}")
+    for path in (destination, temporary):
         if path.is_symlink():
             raise WorkspaceError(f"workspace output path may not be a symlink: {path}")
     if cache_root.exists() and not cache_root.is_dir():
