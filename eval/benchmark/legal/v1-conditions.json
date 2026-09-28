@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "benchmark_id": "legal-v1-draft",
-  "status": "DRAFT_OWNER_REVIEW",
+  "benchmark_id": "legal-v1",
+  "status": "FROZEN",
   "conditions": [
     {
       "condition_id": "EAGER",
@@ -39,7 +39,7 @@
       "CASE_CONVERSATION_LEVEL"
     ],
     "t2_is_identical_input_paired_ab": false,
-    "isolated_follow_up_policy": "A future experiment requiring identical prior assistant context must use a separate benchmark/version with frozen assistant messages. legal-v1-draft contains no frozen assistant replies."
+    "isolated_follow_up_policy": "A future experiment requiring identical prior assistant context must use a separate benchmark/version with frozen assistant messages. legal-v1 contains no frozen assistant replies."
   },
   "comparison_controls": {
     "same_question_order": true,

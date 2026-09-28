@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the public legal benchmark draft and optional committed evaluator gold."""
+"""Validate immutable public legal-v1 artifacts and optional committed evaluator gold."""
 
 from __future__ import annotations
 
@@ -11,12 +11,24 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-BENCHMARK_PATH = Path("eval/benchmark/legal/v1-draft.json")
-CONDITIONS_PATH = Path("eval/benchmark/legal/v1-draft-conditions.json")
-QUESTION_PATH = Path("eval/agent-visible/legal/v1-draft/questions.jsonl")
+BENCHMARK_PATH = Path("eval/benchmark/legal/v1.json")
+CONDITIONS_PATH = Path("eval/benchmark/legal/v1-conditions.json")
+QUESTION_PATH = Path("eval/agent-visible/legal/v1/questions.jsonl")
 EVALUATOR_ROOT = Path("eval/evaluator-only")
 REVIEW_ROOT = Path(".pi-cache")
-EXPECTED_STATUS = "DRAFT_OWNER_REVIEW"
+EXPECTED_BENCHMARK_ID = "legal-v1"
+EXPECTED_STATUS = "FROZEN"
+EXPECTED_FROZEN_AT = "2026-09-28T14:58:04Z"
+EXPECTED_FROZEN_FROM_COMMIT = "4cc27017cb9de7223652b49528cf6be991dae606"
+EXPECTED_QUESTION_SHA256 = "22337618074909dd9fec0e55877d838ddb68070aee1d937f2b602c057821087a"
+EXPECTED_GOLD_SHA256 = "8aaa6e9bec3bf47285b8c2447f1d5599a682b01b5deb18487088d03b5d1a695d"
+EXPECTED_CONDITIONS_SHA256 = "f1e783112f4f55963eee7b9a2a627de9d90a4b047054325a5eb95cf2e775b1c5"
+EXPECTED_CORPUS_ID = "usc-title-17-119-111"
+EXPECTED_CORPUS_SHA256 = "414324629847597bad94c750c76dfcb6a2ef4ed06ecbdc5ab38f59cee8d797ee"
+EXPECTED_CANONICALIZATION = (
+    "UTF-8 JSON Lines; one object per line; keys recursively sorted; separators ',' and ':'; "
+    "ensure_ascii=false; LF after every line"
+)
 EXPECTED_CONDITIONS = ["EAGER", "PROGRESSIVE", "FORCED_RETRIEVAL_CONTROL"]
 EXPECTED_CLASS_COUNTS = {
     "NO_LOOKUP": 4,
@@ -110,24 +122,34 @@ def validate_public(root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     conditions = read_json(root / CONDITIONS_PATH)
     questions = read_jsonl(root / QUESTION_PATH)
 
-    if metadata.get("schema_version") != 1 or metadata.get("benchmark_id") != "legal-v1-draft":
-        raise ValidationError("unexpected benchmark schema version or ID")
+    if metadata.get("schema_version") != 1 or metadata.get("benchmark_id") != EXPECTED_BENCHMARK_ID:
+        raise ValidationError("unexpected frozen benchmark schema version or ID")
     if metadata.get("status") != EXPECTED_STATUS:
         raise ValidationError(f"benchmark status must remain {EXPECTED_STATUS}")
-    if metadata.get("target_class_counts") != EXPECTED_CLASS_COUNTS:
-        raise ValidationError("target class counts do not match the approved 20-case shape")
+    if metadata.get("frozen_at_utc") != EXPECTED_FROZEN_AT:
+        raise ValidationError("frozen timestamp must not change")
+    if metadata.get("frozen_from_commit") != EXPECTED_FROZEN_FROM_COMMIT:
+        raise ValidationError("frozen source commit must not change")
+    if metadata.get("owner_review_complete") is not True:
+        raise ValidationError("owner review must remain complete")
+    if metadata.get("class_counts") != EXPECTED_CLASS_COUNTS:
+        raise ValidationError("class counts do not match frozen legal-v1")
     execution = metadata.get("execution")
-    if execution != {"live_runs_authorized": False, "frozen": False, "results_exist": False}:
-        raise ValidationError("draft execution flags must remain false")
+    if execution != {"live_runs_authorized": False, "results_exist": False}:
+        raise ValidationError("freezing must not authorize a live run or claim results")
 
     question_metadata = metadata.get("question_set", {})
     if question_metadata.get("path") != QUESTION_PATH.as_posix():
-        raise ValidationError("question path does not match the public contract")
+        raise ValidationError("question path does not match frozen legal-v1")
+    if question_metadata.get("sha256") != EXPECTED_QUESTION_SHA256:
+        raise ValidationError("declared question SHA-256 differs from frozen legal-v1")
     if question_metadata.get("case_count") != 20 or question_metadata.get("turn_count") != 23:
         raise ValidationError("question metadata must declare 20 cases and 23 turns")
+    if question_metadata.get("byte_identical_to_reviewed_draft") is not True:
+        raise ValidationError("question set must remain byte-identical to the reviewed draft")
     actual_question_hash = sha256(root / QUESTION_PATH)
-    if question_metadata.get("sha256") != actual_question_hash:
-        raise ValidationError("question-set SHA-256 does not match its bytes")
+    if actual_question_hash != EXPECTED_QUESTION_SHA256:
+        raise ValidationError("question bytes differ from frozen legal-v1")
 
     if len(questions) != 20:
         raise ValidationError(f"expected 20 questions, found {len(questions)}")
@@ -159,8 +181,10 @@ def validate_public(root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     if questions[13]["turns"][0]["prompt"] != CASE_014_PROMPT:
         raise ValidationError("case 014 must contain the approved ownership and transfer stipulations")
 
-    if conditions.get("schema_version") != 1 or conditions.get("benchmark_id") != "legal-v1-draft":
-        raise ValidationError("unexpected conditions schema version or benchmark ID")
+    if sha256(root / CONDITIONS_PATH) != EXPECTED_CONDITIONS_SHA256:
+        raise ValidationError("condition specification bytes differ from frozen legal-v1")
+    if conditions.get("schema_version") != 1 or conditions.get("benchmark_id") != EXPECTED_BENCHMARK_ID:
+        raise ValidationError("unexpected frozen conditions schema version or benchmark ID")
     if conditions.get("status") != EXPECTED_STATUS:
         raise ValidationError(f"conditions status must remain {EXPECTED_STATUS}")
     condition_values = conditions.get("conditions")
@@ -199,6 +223,10 @@ def validate_public(root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     corpus = metadata.get("corpus", {})
     source_manifest = read_json(root / "corpus/manifest/title17.json")
     sections_manifest = read_json(root / "corpus/manifest/title17-sections.json")
+    if corpus.get("corpus_id") != EXPECTED_CORPUS_ID:
+        raise ValidationError("benchmark corpus ID differs from frozen legal-v1")
+    if corpus.get("source_xml_sha256") != EXPECTED_CORPUS_SHA256:
+        raise ValidationError("benchmark corpus checksum differs from frozen legal-v1")
     if corpus.get("corpus_id") != source_manifest.get("corpus_id"):
         raise ValidationError("benchmark corpus ID differs from pinned source manifest")
     if corpus.get("source_xml_sha256") != source_manifest.get("xml", {}).get("sha256"):
@@ -212,9 +240,34 @@ def validate_public(root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     commitment = metadata.get("gold_commitment", {})
     if commitment.get("algorithm") != "sha256":
         raise ValidationError("gold commitment algorithm must be sha256")
-    digest = commitment.get("sha256")
-    if not isinstance(digest, str) or len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
-        raise ValidationError("gold commitment must be a lowercase SHA-256 digest")
+    if commitment.get("canonicalization") != EXPECTED_CANONICALIZATION:
+        raise ValidationError("gold canonicalization rule differs from frozen legal-v1")
+    if commitment.get("sha256") != EXPECTED_GOLD_SHA256:
+        raise ValidationError("gold commitment differs from frozen legal-v1")
+
+    commit_reveal = metadata.get("commit_reveal", {})
+    if commit_reveal.get("status") != "COMMITTED_NOT_REVEALED":
+        raise ValidationError("commit–reveal status must remain committed and unrevealed")
+    if commit_reveal.get("gold_published") is not False or commit_reveal.get("reveal_authorized") is not False:
+        raise ValidationError("private gold must remain unpublished and unrevealed")
+    attestations = metadata.get("freeze_attestations", {})
+    expected_attestations = {
+        "questions_frozen_before_any_benchmark_retrieval_execution": True,
+        "benchmark_frozen_before_any_model_evaluation": True,
+        "lexical_baseline_not_run_against_benchmark_questions_before_freeze": True,
+        "benchmark_retrieval_executions_before_freeze": 0,
+        "model_evaluation_calls_before_freeze": 0,
+        "embedding_calls_before_freeze": 0,
+    }
+    if attestations != expected_attestations:
+        raise ValidationError("freeze attestations differ from frozen legal-v1")
+
+    result_files = [
+        path for path in (root / "results").rglob("*")
+        if path.is_file() and path.name != ".gitkeep"
+    ]
+    if result_files:
+        raise ValidationError("benchmark results exist even though legal-v1 is unexecuted")
     return metadata, questions
 
 
@@ -231,8 +284,8 @@ def validate_gold(
     if not candidate.is_relative_to(evaluator_root):
         raise ValidationError("gold must be under eval/evaluator-only")
     gold = read_jsonl(candidate, require_canonical=True)
-    if sha256(candidate) != metadata["gold_commitment"]["sha256"]:
-        raise ValidationError("evaluator gold does not match the public SHA-256 commitment")
+    if sha256(candidate) != EXPECTED_GOLD_SHA256:
+        raise ValidationError("evaluator gold does not match frozen legal-v1 commitment")
     if len(gold) != len(questions):
         raise ValidationError("gold and question case counts differ")
 
@@ -348,11 +401,11 @@ def render_review(
     metadata: dict[str, Any], questions: list[dict[str, Any]], gold: list[dict[str, Any]]
 ) -> str:
     lines = [
-        "# Legal benchmark v1 draft — owner review packet",
+        "# Legal benchmark v1 — frozen local review packet",
         "",
         "> LOCAL EVALUATOR-ONLY MATERIAL. DO NOT COMMIT OR EXPOSE TO AN AGENT.",
         "",
-        f"Status: `{metadata['status']}` (not frozen; live runs are not authorized)",
+        f"Status: `{metadata['status']}` (frozen; live runs are not authorized)",
         f"Gold commitment: `{metadata['gold_commitment']['sha256']}`",
         "",
     ]
@@ -415,12 +468,12 @@ def main() -> int:
     root = Path(__file__).resolve().parents[1]
     try:
         metadata, questions = validate_public(root)
-        message = f"validated public draft: {len(questions)} cases"
+        message = f"validated frozen legal-v1: {len(questions)} cases"
         if args.review_output is not None and args.gold is None:
             raise ValidationError("--review-output requires --gold")
         if args.gold is not None:
             gold = validate_gold(root, metadata, questions, args.gold)
-            message += f"; verified committed gold: {len(gold)} cases"
+            message += f"; verified unchanged committed gold: {len(gold)} cases"
             if args.review_output is not None:
                 output = write_review(root, args.review_output, render_review(metadata, questions, gold))
                 message += f"; wrote local review packet: {output.relative_to(root)}"

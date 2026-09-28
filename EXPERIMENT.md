@@ -89,7 +89,7 @@ Those conditions must use the same frozen corpus and question set. Conditions B 
 - human review notes; and
 - aggregate comparison logic.
 
-Evaluator-only content must not be reachable by the agent process and must never be indexed by retrieval or Graphify tooling. `tools/build_agent_workspace.py` now stages real files from a legal-experiment allowlist into ignored local state and physically omits evaluator-only data, repository metadata, results, secrets, symlinks, and paths outside the repository. Future agents must run against a condition-specific staged workspace rather than the repository root. A future runner must preserve and enforce this boundary.
+Evaluator-only content must not be reachable by the agent process and must never be indexed by retrieval or Graphify tooling. `tools/build_agent_workspace.py` now stages real files from a legal-experiment allowlist into ignored local state and physically omits evaluator-only data, repository metadata, results, secrets, symlinks, and paths outside the repository. Future agents must run against a condition-specific staged workspace rather than the repository root. For every future live run, evaluator gold must be physically absent from that workspace, unreachable through the network or GitHub, and the agent must have no access to the repository root outside the staged workspace. A future runner must preserve and enforce this boundary.
 
 # Evaluation dimensions
 
@@ -148,7 +148,7 @@ Index-build cost and time must be recorded separately from per-query cost and ti
 
 # Evaluation question classes
 
-The Phase 3B1 legal draft contains 20 proposed cases under `eval/agent-visible/legal/v1-draft/`: four no-lookup, four exact-citation, four single-section natural-language, three multi-section, three conversational follow-up, and two out-of-corpus or insufficient-evidence cases. It is in `DRAFT_OWNER_REVIEW`, is not frozen, and must not be executed. Evaluator expectations remain in ignored local gold; only its SHA-256 commitment is tracked.
+The owner-approved legal benchmark is frozen as `legal-v1` under `eval/agent-visible/legal/v1/`: four no-lookup, four exact-citation, four single-section natural-language, three multi-section, three conversational follow-up, and two out-of-corpus or insufficient-evidence cases. Evaluator expectations remain in ignored local gold; only its SHA-256 commitment is tracked. `FROZEN` does not mean executed: live runs are not authorized and no benchmark results exist.
 
 The planned code set will cover:
 
@@ -159,7 +159,7 @@ The planned code set will cover:
 - a question where lexical search should be sufficient
 - a question where graph relationships might reduce search space
 
-No evaluation questions are frozen yet. Owner approval and a separate freeze step are required before live model runs.
+The legal-v1 questions and evaluation contract are frozen. The planned code set is not frozen.
 
 # Interpretation discipline
 
@@ -196,6 +196,8 @@ Before live evaluation:
 - runner commit is recorded.
 
 All comparison modes must use the same model, reasoning setting, frozen question set, and corpus version, with fresh sessions where required.
+
+`legal-v1` must not be edited in place after freeze. Any semantic change to its questions, gold, conditions, corpus, or evaluation contract requires a new benchmark version such as `legal-v2`. Runner implementation fixes may be versioned separately, but must not silently mutate frozen benchmark inputs.
 
 After the first live output of an experiment version:
 

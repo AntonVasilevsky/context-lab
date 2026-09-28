@@ -3,7 +3,7 @@ results/raw/
 .pi-cache/
 
 # Commit–reveal evaluator gold (keep agent-visible questions tracked)
-eval/evaluator-only/legal/v1-draft/gold.jsonl
+eval/evaluator-only/legal/v1/gold.jsonl
 
 # Build and language-local artifacts
 target/

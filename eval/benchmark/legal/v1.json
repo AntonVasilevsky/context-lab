@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "benchmark_id": "legal-v1",
+  "status": "FROZEN",
+  "frozen_at_utc": "2026-09-28T14:58:04Z",
+  "frozen_from_commit": "4cc27017cb9de7223652b49528cf6be991dae606",
+  "owner_review_complete": true,
+  "corpus": {
+    "corpus_id": "usc-title-17-119-111",
+    "source_xml_path": "corpus/source/title17/usc17.xml",
+    "source_xml_sha256": "414324629847597bad94c750c76dfcb6a2ef4ed06ecbdc5ab38f59cee8d797ee"
+  },
+  "question_set": {
+    "path": "eval/agent-visible/legal/v1/questions.jsonl",
+    "sha256": "22337618074909dd9fec0e55877d838ddb68070aee1d937f2b602c057821087a",
+    "case_count": 20,
+    "turn_count": 23,
+    "byte_identical_to_reviewed_draft": true,
+    "stable_id_note": "The immutable legal-v1-draft-* case and turn IDs preserve their reviewed historical identifiers."
+  },
+  "class_counts": {
+    "NO_LOOKUP": 4,
+    "EXACT_CITATION": 4,
+    "SINGLE_SECTION_NATURAL_LANGUAGE": 4,
+    "MULTI_SECTION": 3,
+    "FOLLOW_UP": 3,
+    "OUT_OF_CORPUS_OR_INSUFFICIENT": 2
+  },
+  "conditions_path": "eval/benchmark/legal/v1-conditions.json",
+  "gold_commitment": {
+    "algorithm": "sha256",
+    "canonicalization": "UTF-8 JSON Lines; one object per line; keys recursively sorted; separators ',' and ':'; ensure_ascii=false; LF after every line",
+    "sha256": "8aaa6e9bec3bf47285b8c2447f1d5599a682b01b5deb18487088d03b5d1a695d"
+  },
+  "commit_reveal": {
+    "status": "COMMITTED_NOT_REVEALED",
+    "gold_published": false,
+    "reveal_authorized": false,
+    "reveal_timing": "Evaluator gold remains private until the approved experiment is completed."
+  },
+  "freeze_attestations": {
+    "questions_frozen_before_any_benchmark_retrieval_execution": true,
+    "benchmark_frozen_before_any_model_evaluation": true,
+    "lexical_baseline_not_run_against_benchmark_questions_before_freeze": true,
+    "benchmark_retrieval_executions_before_freeze": 0,
+    "model_evaluation_calls_before_freeze": 0,
+    "embedding_calls_before_freeze": 0
+  },
+  "execution": {
+    "live_runs_authorized": false,
+    "results_exist": false
+  }
+}

@@ -12,9 +12,13 @@ from tools.validate_legal_benchmark import (
     CASE_014_PROMPT,
     CONDITIONS_PATH,
     EXPECTED_CLASS_COUNTS,
+    EXPECTED_FROZEN_FROM_COMMIT,
+    EXPECTED_GOLD_SHA256,
+    EXPECTED_QUESTION_SHA256,
     ValidationError,
     read_json,
     read_jsonl,
+    sha256,
     validate_public,
 )
 
@@ -22,13 +26,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ValidateLegalBenchmarkTests(unittest.TestCase):
-    def test_public_draft_has_the_declared_shape_offline(self) -> None:
+    def test_public_frozen_benchmark_has_the_declared_shape_offline(self) -> None:
         with mock.patch.object(socket, "socket", side_effect=AssertionError("network attempted")):
             metadata, questions = validate_public(ROOT)
-        self.assertEqual(metadata["status"], "DRAFT_OWNER_REVIEW")
-        self.assertEqual(metadata["target_class_counts"], EXPECTED_CLASS_COUNTS)
+        self.assertEqual(metadata["benchmark_id"], "legal-v1")
+        self.assertEqual(metadata["status"], "FROZEN")
+        self.assertEqual(metadata["frozen_from_commit"], EXPECTED_FROZEN_FROM_COMMIT)
+        self.assertEqual(metadata["class_counts"], EXPECTED_CLASS_COUNTS)
+        self.assertTrue(metadata["owner_review_complete"])
+        self.assertEqual(metadata["execution"], {"live_runs_authorized": False, "results_exist": False})
         self.assertEqual(len(questions), 20)
         self.assertEqual(sum(len(case["turns"]) for case in questions), 23)
+
+    def test_frozen_question_and_gold_commitment_hashes_are_immutable(self) -> None:
+        metadata, _ = validate_public(ROOT)
+        self.assertEqual(sha256(ROOT / metadata["question_set"]["path"]), EXPECTED_QUESTION_SHA256)
+        self.assertEqual(metadata["gold_commitment"]["sha256"], EXPECTED_GOLD_SHA256)
 
     def test_owner_review_question_wording_is_exact(self) -> None:
         _, questions = validate_public(ROOT)
