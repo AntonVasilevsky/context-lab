@@ -148,13 +148,7 @@ Index-build cost and time must be recorded separately from per-query cost and ti
 
 # Evaluation question classes
 
-The planned initial small legal set will cover:
-
-- irrelevant/no-lookup questions
-- direct single-section questions
-- multi-section questions
-- conversational follow-ups
-- out-of-corpus / insufficient-evidence questions
+The Phase 3B1 legal draft contains 20 proposed cases under `eval/agent-visible/legal/v1-draft/`: four no-lookup, four exact-citation, four single-section natural-language, three multi-section, three conversational follow-up, and two out-of-corpus or insufficient-evidence cases. It is in `DRAFT_OWNER_REVIEW`, is not frozen, and must not be executed. Evaluator expectations remain in ignored local gold; only its SHA-256 commitment is tracked.
 
 The planned code set will cover:
 
@@ -165,7 +159,7 @@ The planned code set will cover:
 - a question where lexical search should be sufficient
 - a question where graph relationships might reduce search space
 
-No actual evaluation questions are frozen yet. They must be written and frozen before live model runs.
+No evaluation questions are frozen yet. Owner approval and a separate freeze step are required before live model runs.
 
 # Interpretation discipline
 

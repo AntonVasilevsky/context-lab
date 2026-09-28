@@ -9,8 +9,8 @@ The project has two tracks:
 
 The planned legal corpus is for retrieval research only. Nothing in this repository is legal advice.
 
-**Status: Phase 3A — deterministic Title 17 retrieval baseline.** The official Title 17 XML release current through Public Law 119-111 (September 18, 2026) is pinned with provenance and checksums. The unchanged XML is authoritative; deterministically derived per-section XML files are source fragments for navigation. A staged-workspace builder physically excludes evaluator-only material from future agent workspaces.
+**Status: Phase 3B1 — `DRAFT_OWNER_REVIEW`.** The official Title 17 XML release current through Public Law 119-111 (September 18, 2026) is pinned with provenance and checksums. The unchanged XML is authoritative; deterministically derived per-section XML files are source fragments for navigation. A staged-workspace builder physically excludes evaluator-only material from future agent workspaces.
 
-A local tool now provides exact citation lookup and deterministic SQLite FTS5 lexical candidate search. Its generated index is ignored derived state and is not authoritative. This baseline is not semantic RAG. A future independent experiment may compare structured/lexical retrieval, semantic RAG, and hybrid lexical + semantic retrieval using the same frozen corpus and question set.
+A local tool provides exact citation lookup and deterministic SQLite FTS5 lexical candidate search. Its generated index is ignored derived state and is not authoritative. This baseline is not semantic RAG. A future independent experiment may compare structured/lexical retrieval, semantic RAG, and hybrid lexical + semantic retrieval using the same frozen corpus and question set.
 
-No evaluation questions or live model results exist yet. PetClinic and Graphify are not installed. See [EXPERIMENT.md](EXPERIMENT.md) for the protocol.
+A proposed 20-case legal pilot and public SHA-256 commitment to ignored evaluator gold now await owner review. The draft is not frozen, no live benchmark run is authorized, and no model output exists. PetClinic and Graphify are not installed. See [EXPERIMENT.md](EXPERIMENT.md) for the protocol.

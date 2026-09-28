@@ -29,6 +29,24 @@ Candidates receive an integer score:
 
 Results sort by descending score, then section-manifest ordinal. No synonyms, query rewriting, model calls, or semantic expansion are used. Build timing and index size are emitted as build metrics; query latency is measured separately. XML byte size and normalized searchable-text character count are measurements, not model token estimates.
 
+## Draft legal benchmark validation
+
+`validate_legal_benchmark.py` validates the tracked 20-case Phase 3B1 draft, pinned-corpus identity, question checksum, condition IDs, and draft-only execution flags without network or model calls:
+
+```sh
+python3 tools/validate_legal_benchmark.py
+```
+
+The owner can additionally verify ignored canonical gold against the tracked SHA-256 commitment and regenerate the ignored review packet:
+
+```sh
+python3 tools/validate_legal_benchmark.py \
+  --gold eval/evaluator-only/legal/v1-draft/gold.jsonl \
+  --review-output .pi-cache/legal-benchmark-v1-draft-review.md
+```
+
+Gold must remain under `eval/evaluator-only/`; review output is restricted to `.pi-cache/`. Neither belongs in an agent workspace. Validation does not freeze or execute the benchmark.
+
 ## Other Phase 2 tools
 
 - `prepare_title17.py` deterministically extracts and validates the pinned official XML.
